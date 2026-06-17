@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amigos Especiales de Boliche Guanajuato A.C.</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── General: warm off-white ── */
+      --page-bg:      #f2f0eb;
+      --hero-bg:      #0a5c42;
+      --card-bg:      #ffffff;
+      --card-border:  rgba(0,0,0,0.07);
+      --text-primary: #1a1a1a;
+      --text-mid:     #4a4a4a;
+      --text-muted:   #909090;
+      --divider:      rgba(0,0,0,0.07);
+
+      /* ── Green ── */
+      --green-dark:   #0a5c42;
+      --green-mid:    #1D9E75;
+      --green-light:  #e1f5ee;
+      --green-note-bg:#e1f5ee;
+
+      /* ── Amber accent ── */
+      --amber:        #EF9F27;
+      --amber-light:  #faeeda;
+      --amber-text:   #633806;
+      --amber-note-bg:#faeeda;
+
+      /* ── Tags ── */
+      --tag-bg:       #e8e6e1;
+      --tag-text:     #3a3a3a;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── BOWLING BALL BACKGROUND ── */
+    .bg-balls { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .bg-ball {
+      position: absolute;
+      background-image: url('32405.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.10;
+    }
+    .bg-ball.b1 { width: 220px; height: 220px; top: -40px;  left: -60px;  transform: rotate(-15deg); }
+    .bg-ball.b2 { width: 180px; height: 180px; top: 120px;  right: -50px; transform: rotate(20deg);  }
+    .bg-ball.b3 { width: 260px; height: 260px; top: 420px;  left: -80px;  transform: rotate(8deg);   }
+    .bg-ball.b4 { width: 200px; height: 200px; top: 600px;  right: -60px; transform: rotate(-25deg); }
+    .bg-ball.b5 { width: 240px; height: 240px; top: 900px;  left: -50px;  transform: rotate(12deg);  }
+    .bg-ball.b6 { width: 190px; height: 190px; top: 1100px; right: -40px; transform: rotate(-10deg); }
+    .bg-ball.b7 { width: 210px; height: 210px; top: 1380px; left: -70px;  transform: rotate(5deg);   }
+    .bg-ball.b8 { width: 170px; height: 170px; top: 1550px; right: -55px; transform: rotate(-18deg); }
+    .bg-ball.b9 { width: 230px; height: 230px; top: 1850px; left: -70px;  transform: rotate(10deg);  }
+    .bg-ball.b10{ width: 180px; height: 180px; top: 2100px; right: -45px; transform: rotate(-14deg); }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--hero-bg);
+      padding: 3rem 1.5rem 4rem;
+      text-align: center;
+      position: relative; overflow: hidden; z-index: 1;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, rgba(29,158,117,0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-ball {
+      position: absolute;
+      background-image: url('32405.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.1; filter: invert(1); z-index: 0;
+    }
+    .hero-ball.left  { width: 160px; height: 160px; bottom: -40px; left: -40px;  transform: rotate(-10deg); }
+    .hero-ball.right { width: 130px; height: 130px; top: -20px;    right: -30px; transform: rotate(15deg);  }
+
+    .hero-logo { width: min(360px, 84%); margin: 0 auto 1.5rem; position: relative; z-index: 1; }
+    .hero-logo img { width: 100%; height: auto; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.45)); }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.85);
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 14px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      margin-bottom: 1rem; position: relative; z-index: 1;
+    }
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 400; color: #fff; line-height: 1.25;
+      max-width: 480px; margin: 0 auto 0.75rem;
+      position: relative; z-index: 1;
+    }
+    .hero-sub {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px; max-width: 380px;
+      margin: 0 auto; line-height: 1.6;
+      position: relative; z-index: 1;
+    }
+
+    .wave { display: block; width: 100%; margin-bottom: -2px; position: relative; z-index: 1; }
+
+    .content { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; position: relative; z-index: 1; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 18px; font-weight: 600; letter-spacing: 0.04em;
+      color: #000; margin: 0.5rem 0 0.75rem; padding-left: 2px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px; border: 1px solid var(--card-border);
+      padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .card-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--green-mid); margin-bottom: 0.75rem;
+    }
+    .card-label.amber { color: var(--amber); }
+    .card p { font-size: 14px; color: var(--text-mid); line-height: 1.75; }
+    .card p + p { margin-top: 0.85rem; }
+
+    /* ── VALUES ── */
+    .values { display: flex; flex-direction: column; gap: 0.85rem; }
+    .value {
+      display: flex; flex-direction: column; gap: 3px;
+      padding-bottom: 0.85rem; border-bottom: 1px solid var(--divider);
+    }
+    .value:last-child { border-bottom: none; padding-bottom: 0; }
+    .value-name { font-size: 14px; font-weight: 600; color: var(--green-dark); }
+    .value-desc { font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+
+    /* ── LISTS ── */
+    .list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 0.25rem; }
+    .list li {
+      font-size: 14px; color: var(--text-mid);
+      display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;
+    }
+    .list li::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      margin-top: 6px; flex-shrink: 0;
+    }
+    .list.green li::before { background: var(--green-mid); }
+    .list.amber li::before { background: var(--amber); }
+
+    /* ── TAGS ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.9rem; }
+    .tag {
+      background: var(--tag-bg); color: var(--tag-text);
+      font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px;
+    }
+
+    .divider { border: none; border-top: 1px solid var(--divider); margin: 1rem 0; }
+    .sub-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 0.6rem;
+    }
+
+    /* ── INFO ROWS ── */
+    .info-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 0.75rem 0; border-bottom: 1px solid var(--divider);
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-row:first-child { padding-top: 0; }
+    .info-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .info-icon svg {
+      width: 18px; height: 18px; stroke: var(--green-dark); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .info-text { font-size: 14px; color: var(--text-primary); line-height: 1.5; }
+    .info-text small { display: block; font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .map-btn {
+      display: block; width: 100%; margin-top: 1rem; padding: 0.85rem;
+      background: var(--green-mid); color: #fff; border-radius: 12px;
+      font-size: 14px; font-weight: 500; text-align: center; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .map-btn:hover { background: var(--green-dark); }
+
+    a.link { color: var(--green-mid); text-decoration: none; }
+    a.link:hover { text-decoration: underline; }
+
+    /* ── CTA ── */
+    .cta {
+      background: var(--green-dark);
+      border-radius: 16px; padding: 1.5rem; text-align: center; margin-bottom: 1rem;
+    }
+    .cta p { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; margin-bottom: 0.75rem; }
+    .cta strong { color: #fff; font-weight: 500; }
+    .cta-phones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .cta-phone {
+      background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 10px; padding: 0.6rem 1rem; font-size: 14px; font-weight: 500;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .cta-phone:hover { background: rgba(255,255,255,0.22); }
+
+    footer {
+      text-align: center; padding: 1.5rem 1rem 2rem;
+      font-size: 12px; color: var(--text-muted); position: relative; z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-balls" aria-hidden="true">
+    <div class="bg-ball b1"></div><div class="bg-ball b2"></div>
+    <div class="bg-ball b3"></div><div class="bg-ball b4"></div>
+    <div class="bg-ball b5"></div><div class="bg-ball b6"></div>
+    <div class="bg-ball b7"></div><div class="bg-ball b8"></div>
+    <div class="bg-ball b9"></div><div class="bg-ball b10"></div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-ball left"></div>
+    <div class="hero-ball right"></div>
+
+    <div class="hero-logo">
+      <img src="logoDEEG.png" alt="Logo Amigos Especiales de Boliche Guanajuato A.C." />
+    </div>
+    <div class="hero-badge">Asociación Civil · León, Guanajuato</div>
+    <h1>Amigos Especiales de Boliche Guanajuato A.C.</h1>
+    <p class="hero-sub">Promovemos la inclusión, el desarrollo integral y la calidad de vida de las personas con discapacidad a través del deporte y la convivencia.</p>
+  </header>
+
+  <svg class="wave" viewBox="0 0 1440 48" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <path d="M0,32 C360,0 1080,64 1440,16 L1440,48 L0,48 Z" fill="#0a5c42"/>
+    <path d="M0,40 C400,8 1040,56 1440,24 L1440,48 L0,48 Z" fill="#f2f0eb"/>
+  </svg>
+
+  <main class="content">
+
+    <!-- QUIÉNES SOMOS -->
+    <div class="card">
+      <p class="card-label">¿Quiénes somos?</p>
+      <p>Somos una asociación civil de León, Guanajuato, dedicada a abrir espacios reales de inclusión para personas con discapacidad intelectual a través del deporte. El boliche es nuestro punto de encuentro: un lugar donde cada participante es reconocido como atleta, como compañero y como parte de una comunidad.</p>
+      <p>En cada sesión acompañamos a los atletas durante sus rondas de juego —cuidando turnos, reglas y, sobre todo, animándolos en cada tiro— y al terminar convivimos con actividades lúdicas como lotería, dominó, rompecabezas y enceste de balones. Más allá del juego, buscamos que las familias encuentren una red de apoyo, respiro y pertenencia.</p>
+    </div>
+
+    <!-- MISIÓN -->
+    <div class="card">
+      <p class="card-label">Misión</p>
+      <p>Promover la inclusión, el desarrollo integral y la calidad de vida de personas con discapacidad a través del deporte, brindando oportunidades de entrenamiento, competencia y convivencia en un entorno seguro, respetuoso y motivador.</p>
+    </div>
+
+    <!-- VISIÓN -->
+    <div class="card">
+      <p class="card-label amber">Visión</p>
+      <p>Ser una asociación referente a nivel local y nacional en la formación y promoción de deportistas especiales, reconocida por fomentar la inclusión social, el respeto a la diversidad y el talento deportivo sin barreras.</p>
+    </div>
+
+    <!-- VALORES -->
+    <div class="card">
+      <p class="card-label">Nuestros valores</p>
+      <div class="values">
+        <div class="value">
+          <span class="value-name">Inclusión</span>
+          <span class="value-desc">Todas las personas tienen derecho a participar y desarrollarse en el deporte.</span>
+        </div>
+        <div class="value">
+          <span class="value-name">Respeto</span>
+          <span class="value-desc">Valoramos la dignidad, las capacidades y el esfuerzo de cada deportista.</span>
+        </div>
+        <div class="value">
+          <span class="value-name">Igualdad de oportunidades</span>
+          <span class="value-desc">Impulsamos el acceso equitativo a las actividades deportivas.</span>
+        </div>
+        <div class="value">
+          <span class="value-name">Compromiso social</span>
+          <span class="value-desc">Trabajamos por una sociedad más justa y empática.</span>
+        </div>
+        <div class="value">
+          <span class="value-name">Superación</span>
+          <span class="value-desc">Fomentamos la confianza, el esfuerzo y el crecimiento personal.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBJETIVOS -->
+    <div class="card">
+      <p class="card-label">Objetivos</p>
+      <ul class="list green">
+        <li>Organizar entrenamientos y competencias inclusivas.</li>
+        <li>Impulsar la integración social mediante el deporte.</li>
+        <li>Sensibilizar a la comunidad sobre la inclusión y el respeto a la diversidad.</li>
+        <li>Establecer alianzas con instituciones educativas, deportivas y sociales.</li>
+      </ul>
+    </div>
+
+    <!-- QUÉ HACEMOS -->
+    <div class="card">
+      <p class="card-label">¿Qué hacemos?</p>
+      <p>Nuestra actividad principal es el boliche, complementada con juegos y dinámicas que fortalecen la convivencia. A lo largo del año organizamos y participamos en:</p>
+      <ul class="list green" style="margin-top:0.85rem;">
+        <li>Torneos deportivos inclusivos y adaptados.</li>
+        <li>Exhibiciones y demostraciones deportivas.</li>
+        <li>Jornadas recreativas y de convivencia familiar.</li>
+        <li>Competencias locales, estatales y nacionales.</li>
+      </ul>
+      <hr class="divider"/>
+      <p class="sub-label">Actividades de la asociación</p>
+      <div class="tags" style="margin-top:0;">
+        <span class="tag">Boliche</span>
+        <span class="tag">Lotería</span>
+        <span class="tag">Dominó</span>
+        <span class="tag">Rompecabezas</span>
+        <span class="tag">Enceste de balones</span>
+        <span class="tag">Juegos de mesa</span>
+      </div>
+    </div>
+
+    <!-- A QUIÉN VA DIRIGIDO -->
+    <div class="card">
+      <p class="card-label">¿A quién va dirigido?</p>
+      <p>Acompañamos a personas de distintas edades con discapacidad intelectual y a sus familias. Además, trabajamos de la mano de:</p>
+      <ul class="list green" style="margin-top:0.85rem;">
+        <li>Familias y cuidadores.</li>
+        <li>Entrenadores y profesionales del deporte.</li>
+        <li>Instituciones educativas y deportivas.</li>
+        <li>Organizaciones sociales y fundaciones.</li>
+        <li>La comunidad interesada en la inclusión y el deporte.</li>
+      </ul>
+    </div>
+
+    <!-- HORARIOS -->
+    <div class="card">
+      <p class="card-label">Horarios</p>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+        </div>
+        <div class="info-text">
+          Lunes y miércoles
+          <small>4:30 pm – 7:00 pm</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- UBICACIÓN -->
+    <div class="card">
+      <p class="card-label">Ubicación</p>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        </div>
+        <div class="info-text">
+          Bol-León, Blvr. Mariano Escobedo Pte. 2719
+          <small>La Martinica, 37500 León de los Aldama, Gto.</small>
+        </div>
+      </div>
+      <a class="map-btn" href="https://maps.google.com/?q=Bol-León+Blvr+Mariano+Escobedo+Pte+2719+León+Guanajuato" target="_blank">
+        Ver en Google Maps →
+      </a>
+    </div>
+
+    <!-- CÓMO APOYAR -->
+    <div class="card">
+      <p class="card-label amber">¿Cómo puedes apoyar?</p>
+      <p>Tu apoyo hace posible que más personas con discapacidad intelectual tengan un espacio para jugar, competir y convivir. Puedes sumarte de distintas formas:</p>
+      <ul class="list amber" style="margin-top:0.85rem;">
+        <li>Voluntariado y acompañamiento durante las sesiones.</li>
+        <li>Donativos de equipo, materiales o apoyo económico.</li>
+        <li>Patrocinios y alianzas institucionales.</li>
+        <li>Difusión de nuestra causa en tu comunidad.</li>
+      </ul>
+    </div>
+
+    <!-- CONTACTO -->
+    <div class="card">
+      <p class="card-label">Contacto</p>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="info-text">
+          Claudia Delgado Hinojosa
+          <small>Coordinadora</small>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.85 12 19.79 19.79 0 0 1 1.77 3.38 2 2 0 0 1 3.74 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.1a16 16 0 0 0 6 6l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="info-text">
+          <a class="link" href="tel:4776384462">477 638 4462</a>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="info-text">
+          <a class="link" href="mailto:claudiaintegratti@hotmail.com">claudiaintegratti@hotmail.com</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+      <p><strong>¿Quieres sumarte o conocer más sobre nosotros?</strong><br/>Escríbenos o llámanos, con gusto te contamos cómo participar y apoyar.</p>
+      <div class="cta-phones">
+        <a class="cta-phone" href="tel:4776384462">477 638 4462</a>
+        <a class="cta-phone" href="tel:4771403714">477 140 37 14</a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    Amigos Especiales de Boliche Guanajuato A.C. · León, Gto.
+  </footer>
+
+</body>
+</html>
