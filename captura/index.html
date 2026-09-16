@@ -83,6 +83,10 @@
     .done-card .big { font-family: 'DM Serif Display', serif; font-size: 44px; color: var(--green); line-height: 1; }
     .done-card .big small { display: block; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--mid); margin-top: 6px; }
     footer { text-align: center; font-size: 12px; color: var(--muted); padding: 1rem; }
+    /* Visor de la foto (pantalla completa, con zoom de dos dedos) */
+    .viewer { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 50; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pinch-zoom; }
+    .viewer img { display: block; min-width: 100%; min-height: 100%; width: 100%; height: auto; object-fit: contain; margin: auto; }
+    .viewer button { position: fixed; top: 12px; right: 12px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255,255,255,.9); color: #111; font-size: 26px; line-height: 44px; cursor: pointer; }
     .hidden { display: none !important; }
     :focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
   </style>
@@ -148,10 +152,13 @@
     <button class="btn primary" id="btnOtra" style="margin-top:.6rem">Capturar otra sesión</button>
   </section>
 </main>
+<div class="viewer hidden" id="viewer" role="dialog" aria-label="Foto de la libreta">
+  <button type="button" id="viewerClose" aria-label="Cerrar">×</button>
+  <img id="viewerImg" alt="Foto de la libreta" />
+</div>
 <footer>Amigos Especiales de Boliche Guanajuato A.C. · Los promedios y el tablero se actualizan solos.</footer>
 
 <script>
-  // >>>>>>>>>> PEGA AQUÍ LA URL DE TU APPS SCRIPT (termina en /exec) <<<<<<<<<<
   const API_URL = 'https://script.google.com/macros/s/AKfycbzINw4JOsFbKUBD77OY8fEyoaZhBSNHuPrMo-OaHBy0rXb5w9Zgan9ZfGhyBy7gY4KwZA/exec';
 
   const $ = id => document.getElementById(id);
@@ -224,7 +231,7 @@
     const lista = atletas.slice();
     if (sel && !lista.includes(sel)) lista.unshift(sel);
     return lista.map(a => `<option value="${a}" ${a === sel ? 'selected' : ''}>${a}</option>`).join('')
-      + '<option value="__nuevo__">+ Nuevo atleta…</option><option value="">— quitar —</option>';
+      + '<option value="__nuevo__">+ Nuevo atleta…</option>';
   }
   // Al elegir "Nuevo atleta…" se pide el nombre, se agrega a la lista de todas las filas y queda marcado como nuevo
   function onSelectAtleta(sel) {
@@ -255,7 +262,9 @@
     if (!filas.length) tb.appendChild(fila());
   }
   $('btnAgregar').onclick = () => $('tabla').querySelector('tbody').appendChild(fila());
-  $('btnVerFoto').onclick = () => window.open($('previewImg').src, '_blank');
+  $('btnVerFoto').onclick = () => { $('viewerImg').src = $('previewImg').src; $('viewer').classList.remove('hidden'); };
+  $('viewerClose').onclick = () => $('viewer').classList.add('hidden');
+  $('viewer').addEventListener('click', e => { if (e.target === $('viewer')) $('viewer').classList.add('hidden'); });
 
   function leerTabla() {
     const filas = [], errores = [];
