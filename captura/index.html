@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a5c42" />
+  <title>Captura de puntajes · Amigos Especiales de Boliche</title>
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       CONFIGURACIÓN: pega aquí la URL /exec de tu Apps Script
+       ============================================================ */
+    :root {
+      --green: #0a5c42; --green-mid: #1D9E75; --green-light: #e1f5ee;
+      --amber: #EF9F27; --amber-light: #faeeda; --amber-text: #633806;
+      --red: #b3261e; --red-light: #fbe9e7;
+      --bg: #f2f0eb; --card: #fff; --line: rgba(0,0,0,.08);
+      --text: #1a1a1a; --mid: #4a4a4a; --muted: #8a8a8a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { background: var(--green); color: #fff; padding: 1.1rem 1.25rem 1.3rem; }
+    header h1 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 22px; line-height: 1.2; }
+    header p { font-size: 13px; opacity: .75; margin-top: 4px; }
+    main { max-width: 560px; margin: 0 auto; padding: 1rem 1rem 4rem; }
+
+    /* Pasos */
+    .steps { display: flex; gap: 6px; margin: .25rem 0 1rem; }
+    .steps span { flex: 1; height: 5px; border-radius: 3px; background: #dcd9d2; }
+    .steps span.done { background: var(--green-mid); }
+    .steps span.now { background: var(--amber); }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 17px; font-weight: 700; color: var(--green); margin-bottom: .35rem; }
+    .card p.help { font-size: 14px; color: var(--mid); line-height: 1.55; margin-bottom: .9rem; }
+
+    /* Botones grandes: se usan con el teléfono en la mano, en el boliche */
+    .btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+      padding: 1rem; border: 0; border-radius: 12px; font: 500 16px 'DM Sans', sans-serif; cursor: pointer;
+      transition: background .15s, transform .05s; text-decoration: none; }
+    .btn:active { transform: scale(.99); }
+    .btn.primary { background: var(--green-mid); color: #fff; }
+    .btn.primary:hover { background: var(--green); }
+    .btn.amber { background: var(--amber); color: var(--amber-text); }
+    .btn.ghost { background: transparent; color: var(--green); border: 1.5px solid var(--green-mid); }
+    .btn[disabled] { opacity: .5; cursor: not-allowed; }
+    .btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .row { display: flex; gap: 8px; margin-top: .6rem; }
+    .row .btn { padding: .8rem; font-size: 15px; }
+    input[type=file] { display: none; }
+
+    .preview { position: relative; margin-top: .9rem; border-radius: 12px; overflow: hidden; background: #111; }
+    .preview img { display: block; width: 100%; max-height: 380px; object-fit: contain; }
+
+    /* Tabla de revisión */
+    .fecha-row { display: flex; align-items: center; gap: 10px; margin-bottom: .9rem; }
+    .fecha-row label { font-size: 14px; font-weight: 500; }
+    .fecha-row input { flex: 1; padding: .7rem .8rem; border: 1.5px solid var(--line); border-radius: 10px; font: 16px 'DM Sans', sans-serif; }
+    table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    th { text-align: left; font-size: 11px; font-weight: 500; color: var(--muted); padding: 0 4px 6px; }
+    td { padding: 4px 3px; border-top: 1px solid var(--line); vertical-align: middle; }
+    td select, td input { width: 100%; padding: .55rem .4rem; border: 1.5px solid var(--line); border-radius: 8px; font: 16px 'DM Sans', sans-serif; background: #fff; }
+    td input[type=number] { text-align: center; -moz-appearance: textfield; }
+    td input::-webkit-outer-spin-button, td input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    tr.duda td select, tr.duda td input { border-color: var(--amber); background: var(--amber-light); }
+    td.del button { background: none; border: 0; color: var(--muted); font-size: 20px; padding: 6px; cursor: pointer; }
+    .legend { font-size: 12px; color: var(--amber-text); background: var(--amber-light); padding: .5rem .75rem; border-radius: 8px; margin: .75rem 0; line-height: 1.5; }
+    .summary { font-size: 13px; color: var(--mid); margin-top: .5rem; }
+
+    /* Estados */
+    .status { display: none; padding: .8rem 1rem; border-radius: 10px; font-size: 14px; line-height: 1.5; margin-top: .9rem; }
+    .status.show { display: block; }
+    .status.wait { background: var(--green-light); color: var(--green); }
+    .status.error { background: var(--red-light); color: var(--red); }
+    .status.ok { background: var(--green-light); color: var(--green); }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+    .done-card { text-align: center; }
+    .done-card .big { font-family: 'DM Serif Display', serif; font-size: 44px; color: var(--green); line-height: 1; }
+    .done-card .big small { display: block; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--mid); margin-top: 6px; }
+    footer { text-align: center; font-size: 12px; color: var(--muted); padding: 1rem; }
+    .hidden { display: none !important; }
+    :focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Captura de puntajes</h1>
+  <p>Toma la foto de la libreta y los puntajes pasan solos al registro.</p>
+</header>
+
+<main>
+  <div class="steps" aria-hidden="true"><span id="s1" class="now"></span><span id="s2"></span><span id="s3"></span></div>
+
+  <!-- PASO 1: foto -->
+  <section class="card" id="paso1">
+    <h2>1. Foto de la libreta</h2>
+    <p class="help">Acomoda la hoja completa dentro del cuadro, con buena luz y sin sombras sobre los números.</p>
+    <label class="btn primary" for="fileCam">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Tomar foto
+    </label>
+    <input type="file" id="fileCam" accept="image/*" capture="environment" />
+    <div class="row">
+      <label class="btn ghost" for="fileGal">Elegir de la galería</label>
+      <input type="file" id="fileGal" accept="image/*" />
+    </div>
+    <div class="preview hidden" id="preview"><img id="previewImg" alt="Vista previa de la libreta" /></div>
+    <button class="btn amber hidden" id="btnLeer" style="margin-top:.9rem">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      Leer los puntajes
+    </button>
+    <div class="status" id="st1"></div>
+  </section>
+
+  <!-- PASO 2: revisión -->
+  <section class="card hidden" id="paso2">
+    <h2>2. Revisa lo que se leyó</h2>
+    <p class="help">Corrige cualquier número o nombre que no coincida con la libreta. Deja vacío el juego que no se jugó.</p>
+    <div class="fecha-row"><label for="fecha">Fecha</label><input type="date" id="fecha" required /></div>
+    <div class="legend" id="legend">Las celdas naranjas son lecturas con duda: compáralas con la foto.</div>
+    <table id="tabla">
+      <thead><tr><th style="width:38%">Atleta</th><th>Juego 1</th><th>Juego 2</th><th>Juego 3</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row">
+      <button class="btn ghost" id="btnAgregar">+ Agregar atleta</button>
+      <button class="btn ghost" id="btnVerFoto">Ver foto</button>
+    </div>
+    <p class="summary" id="notas"></p>
+    <button class="btn primary" id="btnGuardar" style="margin-top:.9rem">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar en el registro
+    </button>
+    <div class="status" id="st2"></div>
+  </section>
+
+  <!-- PASO 3: listo -->
+  <section class="card done-card hidden" id="paso3">
+    <h2>3. Guardado</h2>
+    <p class="big" id="doneNum">0<small>filas agregadas a la hoja Registro</small></p>
+    <p class="summary" id="doneTxt" style="margin:.75rem 0 1rem"></p>
+    <a class="btn ghost" id="linkSheet" target="_blank" rel="noopener">Abrir la hoja de cálculo</a>
+    <button class="btn primary" id="btnOtra" style="margin-top:.6rem">Capturar otra sesión</button>
+  </section>
+</main>
+<footer>Amigos Especiales de Boliche Guanajuato A.C. · Los promedios y el tablero se actualizan solos.</footer>
+
+<script>
+  // >>>>>>>>>> PEGA AQUÍ LA URL DE TU APPS SCRIPT (termina en /exec) <<<<<<<<<<
+  const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXX/exec';
+
+  const $ = id => document.getElementById(id);
+  let fotoB64 = null, fotoNombre = null, atletas = [];
+
+  // ---------- utilidades ----------
+  function setStep(n) {
+    ['s1','s2','s3'].forEach((id, i) => { $(id).className = i < n-1 ? 'done' : (i === n-1 ? 'now' : ''); });
+    ['paso1','paso2','paso3'].forEach((id, i) => $(id).classList.toggle('hidden', i !== n-1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function status(el, tipo, html) { el.className = 'status show ' + tipo; el.innerHTML = html; }
+  function clearStatus(el) { el.className = 'status'; el.innerHTML = ''; }
+  async function api(body) {
+    // Sin cabeceras personalizadas → petición "simple" (sin preflight CORS) hacia Apps Script.
+    const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const t = await r.text();
+    try { return JSON.parse(t); } catch { throw new Error('Respuesta inesperada del servidor: ' + t.slice(0, 120)); }
+  }
+  // Reduce la foto a 1600 px de lado mayor y JPEG 85 % (más rápido de subir, suficiente para leerla)
+  function comprimir(file) {
+    return new Promise((res, rej) => {
+      const img = new Image(); const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 1600, k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = rej; img.src = url;
+    });
+  }
+  const hoyISO = () => new Date().toISOString().slice(0, 10);
+  const isoToDMY = iso => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  const dmyToISO = dmy => { const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(dmy || ''); return m ? `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : null; };
+
+  // ---------- Paso 1: foto ----------
+  async function onFoto(file) {
+    if (!file) return;
+    clearStatus($('st1'));
+    fotoNombre = 'libreta_' + hoyISO() + '_' + Date.now().toString().slice(-4) + '.jpg';
+    const dataUrl = await comprimir(file);
+    fotoB64 = dataUrl.split(',')[1];
+    $('previewImg').src = dataUrl; $('preview').classList.remove('hidden'); $('btnLeer').classList.remove('hidden');
+  }
+  $('fileCam').addEventListener('change', e => onFoto(e.target.files[0]));
+  $('fileGal').addEventListener('change', e => onFoto(e.target.files[0]));
+
+  $('btnLeer').addEventListener('click', async () => {
+    if (!fotoB64) return;
+    $('btnLeer').disabled = true;
+    status($('st1'), 'wait', '<span class="spinner"></span>Leyendo la libreta… tarda unos 10–20 segundos.');
+    try {
+      const r = await api({ action: 'extract', image: fotoB64, mediaType: 'image/jpeg' });
+      if (!r.ok) throw new Error(r.error || 'No se pudo leer la foto');
+      atletas = r.atletas || [];
+      $('fecha').value = dmyToISO(r.fecha) || hoyISO();
+      renderTabla(r.filas || []);
+      $('notas').textContent = r.notas ? 'Nota del lector: ' + r.notas : '';
+      $('legend').style.display = (r.filas || []).some(f => f.duda) ? 'block' : 'none';
+      clearStatus($('st1')); setStep(2);
+    } catch (err) {
+      status($('st1'), 'error', 'No se pudo leer la foto. ' + err.message + '<br>Intenta con otra foto más nítida o revisa la conexión.');
+    } finally { $('btnLeer').disabled = false; }
+  });
+
+  // ---------- Paso 2: revisión ----------
+  function opcionesAtleta(sel) {
+    const lista = atletas.slice();
+    if (sel && !lista.includes(sel)) lista.unshift(sel);
+    return lista.map(a => `<option value="${a}" ${a === sel ? 'selected' : ''}>${a}</option>`).join('') + '<option value="">— quitar —</option>';
+  }
+  function fila(f = {}) {
+    const tr = document.createElement('tr'); if (f.duda) tr.className = 'duda';
+    tr.innerHTML = `
+      <td><select>${opcionesAtleta(f.atleta || atletas[0] || '')}</select></td>
+      <td><input type="number" inputmode="numeric" min="0" max="300" value="${f.j1 ?? ''}"></td>
+      <td><input type="number" inputmode="numeric" min="0" max="300" value="${f.j2 ?? ''}"></td>
+      <td><input type="number" inputmode="numeric" min="0" max="300" value="${f.j3 ?? ''}"></td>
+      <td class="del"><button type="button" aria-label="Quitar fila">×</button></td>`;
+    tr.querySelector('.del button').onclick = () => tr.remove();
+    tr.querySelectorAll('input,select').forEach(el => el.addEventListener('input', () => tr.classList.remove('duda')));
+    return tr;
+  }
+  function renderTabla(filas) {
+    const tb = $('tabla').querySelector('tbody'); tb.innerHTML = '';
+    filas.forEach(f => tb.appendChild(fila(f)));
+    if (!filas.length) tb.appendChild(fila());
+  }
+  $('btnAgregar').onclick = () => $('tabla').querySelector('tbody').appendChild(fila());
+  $('btnVerFoto').onclick = () => window.open($('previewImg').src, '_blank');
+
+  function leerTabla() {
+    const filas = [], errores = [];
+    $('tabla').querySelectorAll('tbody tr').forEach((tr, i) => {
+      const atleta = tr.querySelector('select').value.trim();
+      if (!atleta) return;
+      const vals = [...tr.querySelectorAll('input')].map(inp => inp.value === '' ? null : Number(inp.value));
+      vals.forEach((v, j) => { if (v !== null && (isNaN(v) || v < 0 || v > 300 || !Number.isInteger(v))) errores.push(`${atleta}: juego ${j+1} debe ser un entero entre 0 y 300`); });
+      if (vals.every(v => v === null)) errores.push(`${atleta}: no tiene ningún puntaje`);
+      filas.push({ atleta, j1: vals[0], j2: vals[1], j3: vals[2] });
+    });
+    const nombres = filas.map(f => f.atleta);
+    nombres.filter((n, i) => nombres.indexOf(n) !== i).forEach(n => errores.push(`${n} aparece dos veces`));
+    return { filas, errores };
+  }
+
+  $('btnGuardar').addEventListener('click', async () => {
+    const { filas, errores } = leerTabla();
+    const fechaISO = $('fecha').value;
+    if (!fechaISO) errores.unshift('Falta la fecha de la sesión');
+    if (!filas.length) errores.unshift('No hay atletas en la tabla');
+    if (errores.length) { status($('st2'), 'error', errores.join('<br>')); return; }
+    await guardar(filas, isoToDMY(fechaISO), false);
+  });
+
+  async function guardar(filas, fecha, forzar) {
+    $('btnGuardar').disabled = true;
+    status($('st2'), 'wait', '<span class="spinner"></span>Guardando en la hoja de cálculo…');
+    try {
+      const r = await api({ action: 'save', fecha, filas, forzar, foto: fotoB64, fotoNombre, mediaType: 'image/jpeg' });
+      if (r.duplicado) {
+        status($('st2'), 'error', `Ya hay una sesión con fecha ${fecha}. <button class="btn amber" id="btnForzar" style="margin-top:.5rem">Guardar de todos modos (segunda sesión del día)</button>`);
+        $('btnForzar').onclick = () => guardar(filas, fecha, true);
+        return;
+      }
+      if (!r.ok) throw new Error(r.error || 'No se pudo guardar');
+      $('doneNum').firstChild.textContent = r.insertadas;
+      $('doneTxt').textContent = `Sesión ${r.orden} · ${fecha} · a partir de la fila ${r.fila} de "Registro". La foto quedó guardada en Drive como evidencia.`;
+      $('linkSheet').href = r.sheetUrl || '#';
+      clearStatus($('st2')); setStep(3);
+    } catch (err) {
+      status($('st2'), 'error', 'No se guardó. ' + err.message);
+    } finally { $('btnGuardar').disabled = false; }
+  }
+
+  // ---------- Paso 3 ----------
+  $('btnOtra').onclick = () => {
+    fotoB64 = null; $('preview').classList.add('hidden'); $('btnLeer').classList.add('hidden');
+    $('fileCam').value = ''; $('fileGal').value = ''; clearStatus($('st1')); clearStatus($('st2'));
+    setStep(1);
+  };
+
+  if (API_URL.includes('XXXX')) status($('st1'), 'error', 'Falta configurar la URL del Apps Script en index.html (const API_URL).');
+</script>
+</body>
+</html>
