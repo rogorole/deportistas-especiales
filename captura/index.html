@@ -8,9 +8,6 @@
   <link rel="icon" href="../favicon.png" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
-    /* ============================================================
-       CONFIGURACIÓN: pega aquí la URL /exec de tu Apps Script
-       ============================================================ */
     :root {
       --green: #0a5c42; --green-mid: #1D9E75; --green-light: #e1f5ee;
       --amber: #EF9F27; --amber-light: #faeeda; --amber-text: #633806;
@@ -148,8 +145,12 @@
     <h2>3. Guardado</h2>
     <p class="big" id="doneNum">0<small>filas agregadas a la hoja Registro</small></p>
     <p class="summary" id="doneTxt" style="margin:.75rem 0 1rem"></p>
-    <a class="btn ghost" id="linkSheet" target="_blank" rel="noopener">Abrir la hoja de cálculo</a>
-    <button class="btn primary" id="btnOtra" style="margin-top:.6rem">Capturar otra sesión</button>
+    <a class="btn primary" href="../estadisticas/">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Ver estadísticas
+    </a>
+    <button class="btn amber" id="btnOtra" style="margin-top:.6rem">Capturar otra sesión</button>
+    <a class="btn ghost" id="linkSheet" target="_blank" rel="noopener" style="margin-top:.6rem">Abrir la hoja de cálculo</a>
   </section>
 </main>
 <div class="viewer hidden" id="viewer" role="dialog" aria-label="Foto de la libreta">
@@ -159,7 +160,8 @@
 <footer>Amigos Especiales de Boliche Guanajuato A.C. · Los promedios y el tablero se actualizan solos.</footer>
 
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzINw4JOsFbKUBD77OY8fEyoaZhBSNHuPrMo-OaHBy0rXb5w9Zgan9ZfGhyBy7gY4KwZA/exec';
+  // >>>>>>>>>> PEGA AQUÍ LA URL DE TU APPS SCRIPT (termina en /exec) <<<<<<<<<<
+  const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXX/exec';
 
   const $ = id => document.getElementById(id);
   let fotoB64 = null, fotoNombre = null, atletas = [], nuevos = new Set();
