@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a5c42" />
+  <title>Estadísticas · Amigos Especiales de Boliche Guanajuato A.C.</title>
+  <link rel="icon" href="../favicon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green: #0a5c42; --green-mid: #1D9E75; --green-light: #e1f5ee;
+      --amber: #EF9F27; --amber-light: #faeeda; --amber-text: #633806;
+      --bg: #f2f0eb; --card: #fff; --line: rgba(0,0,0,.08);
+      --text: #1a1a1a; --mid: #4a4a4a; --muted: #8a8a8a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { background: var(--green); color: #fff; padding: 1.4rem 1.25rem 1.6rem; text-align: center; }
+    header h1 { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(22px, 5vw, 28px); line-height: 1.2; }
+    header p { font-size: 13px; opacity: .75; margin-top: 6px; }
+    header a { color: rgba(255,255,255,.85); font-size: 13px; text-decoration: none; display: inline-block; margin-top: 10px; border: 1px solid rgba(255,255,255,.3); padding: 4px 12px; border-radius: 20px; }
+    main { max-width: 900px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--green-mid); margin-bottom: .9rem; }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 720px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+
+    /* KPIs */
+    .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 560px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--green-light); border-radius: 12px; padding: .9rem .6rem; text-align: center; }
+    .kpi b { display: block; font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 32px; color: var(--green); line-height: 1; }
+    .kpi span { display: block; font-size: 12px; color: var(--mid); margin-top: 6px; }
+
+    /* Ficha */
+    .ficha-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: .9rem; }
+    .ficha-top select { flex: 1; min-width: 180px; padding: .7rem .8rem; border: 1.5px solid var(--line); border-radius: 10px; font: 16px 'DM Sans', sans-serif; background: #fff; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    @media (min-width: 560px) { .stats { grid-template-columns: repeat(6, 1fr); } }
+    .stat { border: 1px solid var(--line); border-radius: 10px; padding: .6rem .4rem; text-align: center; }
+    .stat b { display: block; font-size: 20px; font-weight: 700; color: var(--green); }
+    .stat span { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .stat.trend b { font-size: 16px; }
+    .trend.up b { color: var(--green-mid); } .trend.down b { color: #b3261e; } .trend.flat b { color: var(--mid); }
+
+    /* Tablas */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+    td { padding: 8px; border-bottom: 1px solid var(--line); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.me td { background: var(--amber-light); font-weight: 500; }
+    .pos { display: inline-block; width: 26px; height: 26px; border-radius: 50%; background: var(--green-light); color: var(--green); font-weight: 700; font-size: 12px; text-align: center; line-height: 26px; }
+    .pos.g { background: var(--amber); color: var(--amber-text); }
+    .wrap { overflow-x: auto; }
+    .chart-box { position: relative; height: 320px; }
+    .chart-box.tall { height: 460px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: .75rem; line-height: 1.5; }
+    .status { text-align: center; padding: 2rem 1rem; color: var(--mid); }
+    .status.err { color: #b3261e; }
+    footer { text-align: center; font-size: 12px; color: var(--muted); padding: 1rem; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Estadísticas de boliche</h1>
+  <p>Amigos Especiales de Boliche Guanajuato A.C. · Temporada 2026</p>
+  <a href="../">← Volver al sitio</a>
+</header>
+
+<main>
+  <div class="status" id="status">Cargando resultados…</div>
+  <div id="app" class="hidden">
+
+    <section class="card">
+      <h2>Resumen de la temporada</h2>
+      <div class="kpis">
+        <div class="kpi"><b id="kSes">–</b><span>sesiones</span></div>
+        <div class="kpi"><b id="kJue">–</b><span>juegos</span></div>
+        <div class="kpi"><b id="kProm">–</b><span>promedio del grupo</span></div>
+        <div class="kpi"><b id="kMejor">–</b><span id="kMejorQuien">mejor juego del año</span></div>
+      </div>
+      <p class="note" id="ultima"></p>
+    </section>
+
+    <section class="card">
+      <h2>Ficha por atleta</h2>
+      <div class="ficha-top">
+        <label for="selAtleta" style="font-size:14px;font-weight:500">Atleta</label>
+        <select id="selAtleta"></select>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="fSes">–</b><span>sesiones</span></div>
+        <div class="stat"><b id="fJue">–</b><span>juegos</span></div>
+        <div class="stat"><b id="fProm">–</b><span>promedio</span></div>
+        <div class="stat"><b id="fMejor">–</b><span>mejor juego</span></div>
+        <div class="stat"><b id="fRank">–</b><span>lugar en ranking</span></div>
+        <div class="stat trend" id="fTrendBox"><b id="fTrend">–</b><span>tendencia</span></div>
+      </div>
+      <div class="chart-box" style="margin-top:1rem"><canvas id="chFicha"></canvas></div>
+      <p class="note">Promedio de cada sesión (pinos por juego). La línea punteada es su promedio general.</p>
+    </section>
+
+    <section class="card">
+      <h2>Ranking por promedio</h2>
+      <div class="wrap">
+        <table id="tRank">
+          <thead><tr><th>#</th><th>Atleta</th><th class="num">Promedio</th><th class="num">Mejor</th><th class="num">Sesiones</th><th class="num">Juegos</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <h2>Evolución mensual</h2>
+        <div class="chart-box tall"><canvas id="chMes"></canvas></div>
+        <p class="note">Atletas con asistencia en la mayoría de los meses. Toca un nombre en la leyenda para ocultarlo.</p>
+      </section>
+      <section class="card">
+        <h2>Participación</h2>
+        <div class="chart-box tall"><canvas id="chPart"></canvas></div>
+        <p class="note">Sesiones en las que jugó cada atleta.</p>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Últimas sesiones</h2>
+      <div class="wrap">
+        <table id="tSes">
+          <thead><tr><th>Fecha</th><th class="num">Atletas</th><th class="num">Juegos</th><th class="num">Promedio</th><th>Mejor de la sesión</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+<footer id="foot">Amigos Especiales de Boliche Guanajuato A.C. · León, Gto.</footer>
+
+<script>
+  // >>>>>>>>>> Misma URL /exec que en captura/index.html <<<<<<<<<<
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzINw4JOsFbKUBD77OY8fEyoaZhBSNHuPrMo-OaHBy0rXb5w9Zgan9ZfGhyBy7gY4KwZA/exec';
+
+  const $ = id => document.getElementById(id);
+  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const PALETA = ['#0a5c42','#EF9F27','#1D9E75','#C0392B','#2E86C1','#8E44AD','#7f8c8d','#d35400'];
+  const f1 = n => n.toFixed(1);
+  const fechaBonita = iso => { if (!iso) return 'Sin fecha'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y.slice(2)}`; };
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  Chart.defaults.color = '#4a4a4a';
+
+  let datos, porAtleta, sesiones, ranking, charts = {};
+
+  async function cargar() {
+    try {
+      const r = await fetch(API_URL + '?action=datos');
+      datos = await r.json();
+      if (!datos.ok) throw new Error(datos.error || 'Respuesta inválida');
+      calcular(); render();
+      $('status').classList.add('hidden'); $('app').classList.remove('hidden');
+    } catch (e) {
+      $('status').className = 'status err';
+      $('status').textContent = 'No se pudieron cargar los resultados. ' + e.message;
+    }
+  }
+
+  function calcular() {
+    porAtleta = {}; sesiones = {};
+    datos.filas.forEach(f => {
+      const A = porAtleta[f.a] ||= { nombre: f.a, sesiones: [], juegos: [] };
+      const prom = f.j.reduce((x,y)=>x+y,0) / f.j.length;
+      A.sesiones.push({ o: f.o, f: f.f, s: f.s, prom, juegos: f.j });
+      A.juegos.push(...f.j);
+      const S = sesiones[f.o] ||= { o: f.o, f: f.f, s: f.s, atletas: 0, juegos: [], mejor: { v: -1, a: '' } };
+      S.atletas++; S.juegos.push(...f.j);
+      const mx = Math.max(...f.j); if (mx > S.mejor.v) S.mejor = { v: mx, a: f.a };
+    });
+    Object.values(porAtleta).forEach(A => {
+      A.sesiones.sort((x,y)=>x.o-y.o);
+      A.prom = A.juegos.reduce((x,y)=>x+y,0)/A.juegos.length;
+      A.mejor = Math.max(...A.juegos); A.peor = Math.min(...A.juegos);
+      // tendencia: últimas 5 sesiones vs las 5 anteriores
+      const p = A.sesiones.map(s=>s.prom);
+      if (p.length >= 6) {
+        const rec = p.slice(-5), ant = p.slice(-10,-5);
+        const d = rec.reduce((x,y)=>x+y,0)/rec.length - ant.reduce((x,y)=>x+y,0)/ant.length;
+        A.tend = d > 3 ? 'up' : d < -3 ? 'down' : 'flat';
+      } else A.tend = null;
+      // por mes (solo con fecha)
+      A.mes = Array.from({length:12}, ()=>({s:0,n:0}));
+      A.sesiones.forEach(s => { if (s.f) { const m = +s.f.slice(5,7)-1; A.mes[m].s += s.juegos.reduce((x,y)=>x+y,0); A.mes[m].n += s.juegos.length; } });
+    });
+    ranking = Object.values(porAtleta).sort((a,b)=>b.prom-a.prom);
+    ranking.forEach((A,i)=>A.rank=i+1);
+  }
+
+  function render() {
+    const todos = datos.filas.flatMap(f=>f.j);
+    const nSes = Object.keys(sesiones).length;
+    $('kSes').textContent = nSes;
+    $('kJue').textContent = todos.length;
+    $('kProm').textContent = f1(todos.reduce((x,y)=>x+y,0)/todos.length);
+    const mejor = ranking.reduce((m,A)=>A.mejor>m.v?{v:A.mejor,a:A.nombre}:m,{v:-1,a:''});
+    $('kMejor').textContent = mejor.v; $('kMejorQuien').textContent = 'mejor juego del año · ' + mejor.a;
+    const ult = Object.values(sesiones).sort((a,b)=>b.o-a.o)[0];
+    $('ultima').textContent = ult ? `Última sesión registrada: ${fechaBonita(ult.f)} · ${ult.atletas} atletas. Actualizado ${new Date(datos.generado).toLocaleString('es-MX')}.` : '';
+
+    // ranking
+    const tb = $('tRank').querySelector('tbody'); tb.innerHTML = '';
+    ranking.forEach(A => {
+      const tr = document.createElement('tr'); tr.dataset.a = A.nombre;
+      tr.innerHTML = `<td><span class="pos ${A.rank<=3?'g':''}">${A.rank}</span></td><td>${A.nombre}</td><td class="num">${f1(A.prom)}</td><td class="num">${A.mejor}</td><td class="num">${A.sesiones.length}</td><td class="num">${A.juegos.length}</td>`;
+      tr.onclick = () => { $('selAtleta').value = A.nombre; renderFicha(); };
+      tb.appendChild(tr);
+    });
+
+    // selector
+    $('selAtleta').innerHTML = ranking.map(A=>`<option value="${A.nombre}">${A.nombre}</option>`).join('');
+    $('selAtleta').onchange = renderFicha;
+    renderFicha();
+
+    // evolución mensual: atletas con datos en >= 60% de los meses con actividad
+    const mesesActivos = new Set(); datos.filas.forEach(f => { if (f.f) mesesActivos.add(+f.f.slice(5,7)-1); });
+    const mesesArr = [...mesesActivos].sort((a,b)=>a-b);
+    const regulares = ranking.filter(A => mesesArr.filter(m=>A.mes[m].n>0).length >= Math.ceil(mesesArr.length*0.6)).slice(0,8);
+    charts.mes = new Chart($('chMes'), { type: 'line',
+      data: { labels: mesesArr.map(m=>MESES[m]), datasets: regulares.map((A,i)=>({ label: A.nombre, data: mesesArr.map(m=>A.mes[m].n?+f1(A.mes[m].s/A.mes[m].n):null), borderColor: PALETA[i%PALETA.length], backgroundColor: PALETA[i%PALETA.length], tension: .25, spanGaps: true, pointRadius: 3 })) },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { title: { display: true, text: 'Pinos por juego' } } } } });
+
+    // participación
+    const porSes = [...ranking].sort((a,b)=>b.sesiones.length-a.sesiones.length);
+    charts.part = new Chart($('chPart'), { type: 'bar',
+      data: { labels: porSes.map(A=>A.nombre), datasets: [{ label: 'Sesiones', data: porSes.map(A=>A.sesiones.length), backgroundColor: '#1D9E75', borderRadius: 4 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } } });
+
+    // últimas sesiones
+    const ts = $('tSes').querySelector('tbody'); ts.innerHTML = '';
+    Object.values(sesiones).sort((a,b)=>b.o-a.o).slice(0,10).forEach(S => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${fechaBonita(S.f)}</td><td class="num">${S.atletas}</td><td class="num">${S.juegos.length}</td><td class="num">${f1(S.juegos.reduce((x,y)=>x+y,0)/S.juegos.length)}</td><td>${S.mejor.a} (${S.mejor.v})</td>`;
+      ts.appendChild(tr);
+    });
+  }
+
+  function renderFicha() {
+    const A = porAtleta[$('selAtleta').value]; if (!A) return;
+    $('fSes').textContent = A.sesiones.length; $('fJue').textContent = A.juegos.length;
+    $('fProm').textContent = f1(A.prom); $('fMejor').textContent = A.mejor;
+    $('fRank').textContent = `${A.rank} / ${ranking.length}`;
+    const T = { up: ['▲ mejora','up'], down: ['▼ baja','down'], flat: ['= estable','flat'] }[A.tend] || ['–','flat'];
+    $('fTrend').textContent = T[0]; $('fTrendBox').className = 'stat trend ' + T[1];
+    document.querySelectorAll('#tRank tbody tr').forEach(tr => tr.classList.toggle('me', tr.dataset.a === A.nombre));
+    if (charts.ficha) charts.ficha.destroy();
+    charts.ficha = new Chart($('chFicha'), { type: 'line',
+      data: { labels: A.sesiones.map(s=>fechaBonita(s.f)), datasets: [
+        { label: 'Promedio de la sesión', data: A.sesiones.map(s=>+f1(s.prom)), borderColor: '#0a5c42', backgroundColor: 'rgba(29,158,117,.15)', fill: true, tension: .25, pointRadius: 3 },
+        { label: 'Promedio general', data: A.sesiones.map(()=>+f1(A.prom)), borderColor: '#EF9F27', borderDash: [6,4], pointRadius: 0, fill: false } ] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'Pinos por juego' } }, x: { ticks: { maxTicksLimit: 8 } } } } });
+  }
+
+  cargar();
+</script>
+</body>
+</html>
